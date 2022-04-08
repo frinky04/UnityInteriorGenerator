@@ -248,7 +248,7 @@ MonoBehaviour:
   Size: 2
   floorPrefab: {fileID: 919132149155446097, guid: 8de68e58ca2804746b911d3d98e33a3b, type: 3}
   wallPrefab: {fileID: 919132149155446097, guid: 9103a637bc147b0469a8184114bed611, type: 3}
-  allfloors: []
+  allFloors: []
 --- !u!4 &884750283
 Transform:
   m_ObjectHideFlags: 0
@@ -339,8 +339,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.36778286, y: -0.45586374, z: 0.21450847, w: 0.7816074}
+  m_LocalPosition: {x: 8.245551, y: 16.639833, z: -11.138024}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
