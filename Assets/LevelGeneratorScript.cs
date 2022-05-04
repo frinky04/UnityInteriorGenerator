@@ -18,7 +18,7 @@ public class LevelGeneratorScript : MonoBehaviour
         PlaceFloors(allFloors);
         allWalls = GenerateWalls(allFloors);
         PlaceWalls(allWalls);*/
-        GenerateRandomRooms(4, 4, 4);
+        GenerateRandomRooms(4, 4, 1);
     }
 
     // Update is called once per frame
@@ -38,13 +38,16 @@ public class LevelGeneratorScript : MonoBehaviour
         //create 4 lists of rooms generated from the functions input
         List<Vector2Int> room1 = GenerateFloorArray(xsize, ysize, xoffset, yoffset);
         List<Vector2Int> room2 = GenerateFloorArray(ysize, xsize, xoffset, yoffset);
-        List<Vector2Int> room3 = GenerateFloorArray(xsize, ysize, xoffset - xsize, yoffset - ysize);
+        List<Vector2Int> room3 = GenerateFloorArray(xsize, ysize, xoffset - (xsize-1), yoffset - (ysize-1));
+        List<Vector2Int> room4 = GenerateFloorArray(xsize, ysize, xoffset , yoffset - (ysize + 1));
+        List<Vector2Int> room5 = GenerateFloorArray(xsize, ysize, xoffset - (xsize + 1), yoffset);
 
         //check if any of the rooms are in the list of floors to avoid, if if they are, return null
         if (!room1.Intersect(floorsToAvoid).Any()) { return room1; }
-        //repeat for other rooms
         if (!room2.Intersect(floorsToAvoid).Any()) { return room2; }
         if (!room3.Intersect(floorsToAvoid).Any()) { return room3; }
+        if (!room4.Intersect(floorsToAvoid).Any()) { return room4; }
+        if (!room5.Intersect(floorsToAvoid).Any()) { return room5; }
 
         //if we make it through all the rooms, return null
         return null;
@@ -71,40 +74,34 @@ public class LevelGeneratorScript : MonoBehaviour
             bool success = false;
             int iterators = 0;
 
-            while (success == false && iterators < 4)
+            Vector2Int testingPosition = PlacedFloors[Random.Range(0, PlacedFloors.Count)];
+            int isEdgeTest = isEdge(testingPosition, PlacedFloors);
+            Vector2Int newDirection = testingPosition + directionArray[isEdgeTest];
+
+/*            if (isEdgeTest != -1)
+            {
+                AddDebugBox(posToVector(testingPosition));
+                AddDebugBox(posToVector(newDirection));
+            }
+*/
+            List<Vector2Int> newRoom = AttemptToFitRoom(3, 3, newDirection.x, newDirection.y, PlacedFloors);
+
+            PlaceFloors(newRoom);
+            PlaceWalls(GenerateWalls(newRoom));
+
+
+/*
+            while (success == false && iterators < 0)
             {
                 iterators++;
-                //Get random vector2 int from the placed floor list
-                Vector2Int selection = PlacedFloors[Random.Range(0, PlacedFloors.Count)];
+
                 
-                //Check if it is an edge, and then place the room
-                if (isEdge(selection, PlacedFloors) != -1)
-                {
-                    
-                    //get direction
-                    Vector2Int direction = directionArray[isEdge(selection, PlacedFloors)];
-                    Vector2Int newlocation = direction + selection;
-                    AddDebugBox(posToVector(newlocation), Color.red);
-
-                    if (!PlacedFloors.Contains(newlocation))
-                    {
-                        //List for the new room
-                        List<Vector2Int> newRoom = AttemptToFitRoom(baseRoomSizeX, baseRoomSizeY, newlocation.x, newlocation.y, PlacedFloors);
-                        if (newRoom != null)
-                        {
-                            AddDebugBox(posToVector(selection), GetRandomColour());
-                            DrawDebugString(i.ToString(), posToVector(selection));
-                            PlacedFloors.AddRange(newRoom);
-                            PlacedWalls.AddRange(GenerateWalls(newRoom));
-                            Color tempcolour = GetRandomColour();
 
 
-                            success = true;
-                        }
 
-                    }
-                }
-            }
+
+
+            }*/
 
             //remove duplicates from lists
             PlacedFloors = PlacedFloors.Distinct().ToList();
@@ -221,12 +218,21 @@ public class LevelGeneratorScript : MonoBehaviour
     int isEdge(Vector2Int floor, List<Vector2Int> testArray)
     {
         Vector2Int[] localDirections = directionArray;
+        int index = Random.Range(0, localDirections.Length);
         for (int i = 0; i < 4; i++)
         {
-            Vector2Int testDirection = directionArray[i];
+            Vector2Int testDirection = directionArray[index];
             if (!testArray.Contains(floor + testDirection))
             {
-                return i;
+                return index;
+            }
+            else
+            {
+                index++;
+                if(index == localDirections.Length)
+                {
+                    index = 0;
+                }
             }
         }
         return -1;
