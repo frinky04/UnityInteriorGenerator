@@ -18,7 +18,7 @@ public class LevelGeneratorScript : MonoBehaviour
         PlaceFloors(allFloors);
         allWalls = GenerateWalls(allFloors);
         PlaceWalls(allWalls);*/
-        GenerateRandomRooms(4, 4, 1);
+        GenerateRandomRooms(1, 1, 5);
     }
 
     // Update is called once per frame
@@ -36,19 +36,17 @@ public class LevelGeneratorScript : MonoBehaviour
     List<Vector2Int> AttemptToFitRoom(int xsize, int ysize, int xoffset, int yoffset, List<Vector2Int> floorsToAvoid)
     {
         //create 4 lists of rooms generated from the functions input
-        List<Vector2Int> room1 = GenerateFloorArray(xsize, ysize, xoffset, yoffset);
-        List<Vector2Int> room2 = GenerateFloorArray(ysize, xsize, xoffset, yoffset);
-        List<Vector2Int> room3 = GenerateFloorArray(xsize, ysize, xoffset - (xsize-1), yoffset - (ysize-1));
-        List<Vector2Int> room4 = GenerateFloorArray(xsize, ysize, xoffset , yoffset - (ysize + 1));
-        List<Vector2Int> room5 = GenerateFloorArray(xsize, ysize, xoffset - (xsize + 1), yoffset);
-
         //check if any of the rooms are in the list of floors to avoid, if if they are, return null
+        List<Vector2Int> room1 = GenerateFloorArray(xsize, ysize, xoffset, yoffset);
         if (!room1.Intersect(floorsToAvoid).Any()) { return room1; }
+        List<Vector2Int> room2 = GenerateFloorArray(ysize, xsize, xoffset, yoffset);
         if (!room2.Intersect(floorsToAvoid).Any()) { return room2; }
+        List<Vector2Int> room3 = GenerateFloorArray(xsize, ysize, xoffset - xsize + 1, yoffset - ysize + 1);
         if (!room3.Intersect(floorsToAvoid).Any()) { return room3; }
+        List<Vector2Int> room4 = GenerateFloorArray(xsize, ysize, xoffset, yoffset - ysize + 1);
         if (!room4.Intersect(floorsToAvoid).Any()) { return room4; }
+        List<Vector2Int> room5 = GenerateFloorArray(xsize, ysize, xoffset - xsize + 1, yoffset);
         if (!room5.Intersect(floorsToAvoid).Any()) { return room5; }
-
         //if we make it through all the rooms, return null
         return null;
 
@@ -59,6 +57,7 @@ public class LevelGeneratorScript : MonoBehaviour
 
     void GenerateRandomRooms(int baseRoomSizeX, int baseRoomSizeY, int numberOfRooms)
     {
+        bool hasGeneratedFirstRoom = false;
         //List of floors
         List<Vector2Int> PlacedFloors = new List<Vector2Int>();
         //list of walls
@@ -74,34 +73,48 @@ public class LevelGeneratorScript : MonoBehaviour
             bool success = false;
             int iterators = 0;
 
-            Vector2Int testingPosition = PlacedFloors[Random.Range(0, PlacedFloors.Count)];
-            int isEdgeTest = isEdge(testingPosition, PlacedFloors);
-            Vector2Int newDirection = testingPosition + directionArray[isEdgeTest];
-
-/*            if (isEdgeTest != -1)
-            {
-                AddDebugBox(posToVector(testingPosition));
-                AddDebugBox(posToVector(newDirection));
-            }
-*/
-            List<Vector2Int> newRoom = AttemptToFitRoom(3, 3, newDirection.x, newDirection.y, PlacedFloors);
-
-            PlaceFloors(newRoom);
-            PlaceWalls(GenerateWalls(newRoom));
 
 
-/*
-            while (success == false && iterators < 0)
+
+            while (success == false && iterators < 1024)
             {
                 iterators++;
+                Vector2Int testingPosition = PlacedFloors[Random.Range(0, PlacedFloors.Count)];
+                Vector2Int newDirection = Vector2Int.zero;
+                int isEdgeTest = isEdge(testingPosition, PlacedFloors);
+                if (hasGeneratedFirstRoom && testingPosition == Vector2Int.zero)
+                {
+                    success = false;
+                }
+                else
+                {
+                    if (isEdgeTest != -1)
+                    {
+                        newDirection = testingPosition + directionArray[isEdgeTest];
+                        print("Edge Found!");
 
-                
-
-
-
-
-
-            }*/
+                        List<Vector2Int> newRoom = AttemptToFitRoom(Random.Range(0, 3) + 2, Random.Range(0, 3) + 2, newDirection.x, newDirection.y, PlacedFloors);
+                        if (newRoom != null)
+                        {
+                            print("Was Able To Fit Room");
+                            success = true;
+                            PlaceFloors(newRoom);
+                            PlaceWalls(GenerateWalls(newRoom));
+                            AddDebugBox(posToVector(testingPosition), Color.red);
+                            AddDebugBox(posToVector(newDirection), Color.green);
+                            PlacedFloors.AddRange(newRoom);
+                            success = true;
+                            hasGeneratedFirstRoom = true;
+                        }
+                        else if (newRoom == null)
+                        {
+                            print("Room did not fit");
+                            success = false;
+                            AddDebugBox(posToVector(newDirection), Color.red);
+                        }
+                    }
+                }
+            }
 
             //remove duplicates from lists
             PlacedFloors = PlacedFloors.Distinct().ToList();
@@ -229,7 +242,7 @@ public class LevelGeneratorScript : MonoBehaviour
             else
             {
                 index++;
-                if(index == localDirections.Length)
+                if (index == localDirections.Length)
                 {
                     index = 0;
                 }
