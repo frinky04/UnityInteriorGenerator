@@ -8,16 +8,19 @@ public class LevelGeneratorScript : MonoBehaviour
     public GameObject floorPrefab;
     public GameObject wallPrefab;
     public GameObject doorwayPrefab;
-    public List<Vector2Int> allFloors = new List<Vector2Int>();
-    public List<Wall> allWalls = new List<Wall>();
+    private List<Vector2Int> allFloors = new List<Vector2Int>();
+    private List<Wall> allWalls = new List<Wall>();
+    [SerializeField] public List<GameObject> allProps = new List<GameObject>(); 
+    [SerializeField] public List<RoomTheme> roomThemes = new List<RoomTheme>();
     private Vector2Int[] directionArray = new Vector2Int[] { new Vector2Int(1, 0), new Vector2Int(0, -1), new Vector2Int(-1, 0), new Vector2Int(0, 1) };
     private Vector2Int[] invertedDirectionArray = new Vector2Int[] { new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(1, 0), new Vector2Int(0, -1) };
     private int[] invertedRotationArray = new int[] { 2, 3, 0, 1 };
+    
 
     // Start is called before the first frame update
     void Start()
     {
-        GenerateRandomRooms(3, 3, 4);
+        GenerateRandomRooms(1, 1, 5);
 
     }
 
@@ -57,17 +60,33 @@ public class LevelGeneratorScript : MonoBehaviour
 
     public void GenerateRandomRooms(int baseRoomSizeX, int baseRoomSizeY, int numberOfRooms)
     {
-        bool hasGeneratedFirstRoom = false;
-        //List of floors
+
         List<Vector2Int> PlacedFloors = new List<Vector2Int>();
-        //list of walls
         List<Wall> PlacedWalls = new List<Wall>();
+
+        //Initial Room
         PlacedFloors = GenerateFloorArray(baseRoomSizeX, baseRoomSizeY, 0, 0);
-        //Create walls for inital room
         PlacedWalls = GenerateWalls(PlacedFloors);
-        //Doorways 
+
         List<Wall> PlacedDoorways = new List<Wall>();
-        //Place walls
+        List<List<Vector2Int>> rooms = new List<List<Vector2Int>>();
+
+        List<Vector2Int> doorPositions = new List<Vector2Int>();
+
+        //Generate Hub Room
+        List<Vector2Int> HubRoom = GenerateFloorArray(4, 2, 0, 1);
+        PlacedWalls.AddRange(GenerateWalls(HubRoom));
+        PlacedFloors.AddRange(HubRoom);
+        rooms.Add(HubRoom);
+
+        //Add Hub Doorway
+        PlacedDoorways.Add(new Wall(3, Vector2Int.zero));
+        doorPositions.Add(Vector2Int.zero);
+        doorPositions.Add(new Vector2Int(0,1));
+
+        //Door Posisitons
+
+
         for (int i = 0; i < numberOfRooms; i++)
         {
             bool success = false;
@@ -79,62 +98,60 @@ public class LevelGeneratorScript : MonoBehaviour
                 Vector2Int testingPosition = PlacedFloors[Random.Range(0, PlacedFloors.Count)];
                 Vector2Int newDirection = Vector2Int.zero;
                 int isEdgeTest = isEdge(testingPosition, PlacedFloors);
-                if (hasGeneratedFirstRoom && testingPosition == Vector2Int.zero)
+
+                if (isEdgeTest != -1 && testingPosition != Vector2Int.zero)
                 {
-                    success = false;
-                }
-                else
-                {
-                    if (isEdgeTest != -1)
+                    newDirection = testingPosition + directionArray[isEdgeTest];
+                    List<Vector2Int> newRoom = AttemptToFitRoom(Random.Range(0, 5) + 2, Random.Range(0, 5) + 2, newDirection.x, newDirection.y, PlacedFloors);
+                    if (newRoom != null)
                     {
-                        newDirection = testingPosition + directionArray[isEdgeTest];
-                        //print("Edge Found!");
-
-                        List<Vector2Int> newRoom = AttemptToFitRoom(Random.Range(0, 3) + 2, Random.Range(0, 3) + 2, newDirection.x, newDirection.y, PlacedFloors);
-                        if (newRoom != null)
-                        {
-                            //print("Was Able To Fit Room");
-                            success = true;
-                            List<Wall> newRoomWalls = GenerateWalls(newRoom);
-                            PlacedDoorways.Add(new Wall(isEdgeTest, testingPosition));
-                            PlacedDoorways.Add(new Wall(invertedRotationArray[isEdgeTest], newDirection));
-
-                            PlacedWalls.AddRange(newRoomWalls);
-                            //AddDebugBox(posToVector(testingPosition), Color.red);
-                            //AddDebugBox(posToVector(newDirection), Color.green);
-                            PlacedFloors.AddRange(newRoom);
-                            success = true;
-                            hasGeneratedFirstRoom = true;
-                            
-                        }
-                        else if (newRoom == null)
-                        {
-                            //print("Room did not fit");
-                            success = false;
-                            AddDebugBox(posToVector(newDirection), Color.red);
-                        }
+                        success = true;
+                        List<Wall> newRoomWalls = GenerateWalls(newRoom);
+                        doorPositions.Add(testingPosition);
+                        doorPositions.Add(newDirection);
+                        PlacedDoorways.Add(new Wall(isEdgeTest, testingPosition));
+                        PlacedDoorways.Add(new Wall(invertedRotationArray[isEdgeTest], newDirection));
+                        PlacedWalls.AddRange(newRoomWalls);
+                        PlacedFloors.AddRange(newRoom);
+                        rooms.Add(newRoom);
+                        success = true;
+                    }
+                    else if (newRoom == null)
+                    {
+                        success = false;
                     }
                 }
             }
+        }
 
-            //loop through doorways
-            foreach (Wall doorway in PlacedDoorways)
+        foreach (Wall doorway in PlacedDoorways)
+        {
+            if (getWallAtTransform(doorway.pos, doorway.rot, PlacedWalls) != -1)
             {
-                if(getWallAtTransform(doorway.pos, doorway.rot, PlacedWalls) != null)
+                PlacedWalls[getWallAtTransform(doorway.pos, doorway.rot, PlacedWalls)].ChangeWallState(Wall.WallType.Doorway);
+            }
+        }
+
+
+
+
+        //remove duplicates from lists
+        PlacedFloors = PlacedFloors.Distinct().ToList();
+        PlaceFloors(PlacedFloors);
+        PlaceWalls(PlacedWalls);
+
+        foreach (List<Vector2Int> room in rooms)
+        {
+            foreach (Vector2Int testFloor in room)
+            {
+                int propEdgeTest = isEdge(testFloor, room);
+                if (propEdgeTest != -1 && !doorPositions.Contains(testFloor))
                 {
-                    getWallAtTransform(doorway.pos, doorway.rot, PlacedWalls).wallType = Wall.WallType.Doorway;
+                    PlaceProp(new Prop(testFloor, propEdgeTest, allProps));
                 }
             }
             
-            
-            
-
-            //remove duplicates from lists
-            PlacedFloors = PlacedFloors.Distinct().ToList();
-            PlaceFloors(PlacedFloors);
-            PlaceWalls(PlacedWalls);
         }
-
 
     }
 
@@ -161,9 +178,9 @@ public class LevelGeneratorScript : MonoBehaviour
     }
 
 
-    public void DebugWall(Wall wall) 
+    public void DebugWall(Wall wall)
     {
-        Instantiate(wallPrefab, posToVector(wall.pos)+ new Vector3(0.0f, 3f, 0.0f), Quaternion.Euler(-90f, intToRot(wall.rot), 0.0f), this.transform);
+        Instantiate(wallPrefab, posToVector(wall.pos) + new Vector3(0.0f, 3f, 0.0f), Quaternion.Euler(-90f, intToRot(wall.rot), 0.0f), this.transform);
     }
 
 
@@ -208,7 +225,7 @@ public class LevelGeneratorScript : MonoBehaviour
                     Wall wallToAdd = new Wall(y, floor);
                     walls.Add(wallToAdd);
                     allWalls.Add(wallToAdd);
-                    
+
                 }
             }
         }
@@ -278,7 +295,7 @@ public class LevelGeneratorScript : MonoBehaviour
     {
         foreach (Vector2Int floor in inFloors)
         {
-            Instantiate(floorPrefab, posToVector(floor), Quaternion.Euler(-90f, 0.0f, 0.0f), this.transform);
+            Instantiate(floorPrefab, posToVector(floor), Quaternion.Euler(-90f, 0.0f, 0.0f), this.transform).name = $"Floor: {floor}";
         }
     }
 
@@ -287,7 +304,7 @@ public class LevelGeneratorScript : MonoBehaviour
     {
         foreach (Wall wall in inWalls)
         {
-            Instantiate(getWallPrefabFromType(wall.wallType), posToVector(wall.pos), Quaternion.Euler(-90f, intToRot(wall.rot), 0.0f), this.transform);
+            Instantiate(getWallPrefabFromType(wall.wallType), posToVector(wall.pos), Quaternion.Euler(-90f, intToRot(wall.rot), 0.0f), this.transform).name = $"{wall.wallType}: {wall.pos} ";
         }
     }
 
@@ -303,20 +320,23 @@ public class LevelGeneratorScript : MonoBehaviour
         return rot * 90;
     }
 
-    public Wall getWallAtTransform(Vector2Int pos, int rot, List<Wall> walls)
+    public int getWallAtTransform(Vector2Int pos, int rot, List<Wall> wallsList)
     {
+        int i = 0;
         //loop through all walls
-        foreach (Wall wall in walls)
+        foreach (Wall wall in wallsList)
         {
+
             //if the wall is at the position and rotation
             if (wall.pos == pos && wall.rot == rot)
             {
                 //return the wall
-                return wall;
+                return i;
             }
+            i++;
 
         }
-        return null;
+        return -1;
     }
 
     public bool doesWallExist(Vector2Int pos, int rot)
@@ -327,13 +347,13 @@ public class LevelGeneratorScript : MonoBehaviour
             {
                 return true;
             }
-            else if(wall.pos == pos + directionArray[rot] && wall.rot == invertedRotationArray[rot])
+            else if (wall.pos == pos + directionArray[rot] && wall.rot == invertedRotationArray[rot])
             {
                 return true;
             }
         }
         return false;
-        
+
     }
     GameObject getWallPrefabFromType(Wall.WallType wallType)
     {
@@ -348,6 +368,11 @@ public class LevelGeneratorScript : MonoBehaviour
             default:
                 return null;
         }
+    }
+
+    void PlaceProp(Prop prop)
+    {
+        Instantiate(prop.propPrefab, posToVector(prop.pos), Quaternion.Euler(-90f, intToRot(prop.rot), 0.0f), this.transform).name = $"Prop: {prop.propPrefab.name} ";
     }
 }
 
@@ -366,7 +391,10 @@ public class Wall
         Window
     }
 
-
+    public void ChangeWallState(WallType wallType)
+    {
+        this.wallType = wallType;
+    }
 
 
     public Wall(int rot, Vector2Int pos)
@@ -374,4 +402,36 @@ public class Wall
         this.rot = rot;
         this.pos = pos;
     }
+}
+
+[System.Serializable]
+public class Prop
+{
+    public GameObject propPrefab;
+    public Vector2Int pos;
+    public int rot;
+
+    public Prop(Vector2Int pos, int rot, List<GameObject> props)
+    {
+        //get random element from props
+        propPrefab = props[Random.Range(0, props.Count)];
+        this.pos = pos;
+        this.rot = rot;
+
+        //
+        
+    }
+}
+
+
+[System.Serializable]
+public struct RoomTheme
+{
+    public string themeName;
+    public float spawnChance;
+    public List<GameObject> props;
+    public Color wallTint;
+    public Color floorTint;
+    public int sizeX;
+    public int sizeY;
 }
