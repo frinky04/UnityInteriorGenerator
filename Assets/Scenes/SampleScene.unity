@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -249,10 +249,15 @@ MonoBehaviour:
   floorPrefab: {fileID: 919132149155446097, guid: 30f9c19cd68e59a4db102e00596f6e13, type: 3}
   wallPrefab: {fileID: 919132149155446097, guid: e5cdd2eaab56fe84b92fffa54c901a93, type: 3}
   doorwayPrefab: {fileID: 919132149155446097, guid: aca5aa6260b9a6c4ba150f7eeba4707e, type: 3}
-  allProps: []
+  allProps:
+  - {fileID: 919132149155446097, guid: 9a90fecdb0d7f5c449e3e2897763c404, type: 3}
+  - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
+  - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
+  - {fileID: 919132149155446097, guid: a083e51d44842b04db30da22453b83d8, type: 3}
+  - {fileID: 919132149155446097, guid: 585e3262042186f46b91b2d8a3be2ae3, type: 3}
   roomThemes:
   - themeName: Computer Area
-    spawnChance: 0.5
+    spawnChance: 0.75
     props:
     - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
     - {fileID: 919132149155446097, guid: 585e3262042186f46b91b2d8a3be2ae3, type: 3}
@@ -260,6 +265,8 @@ MonoBehaviour:
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 5
     sizeY: 5
+    roomsCanConnect: []
+    restrictFromRandomSelection: 0
   - themeName: Storage
     spawnChance: 1
     props:
@@ -270,17 +277,10 @@ MonoBehaviour:
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 2
-  - themeName: Hallway
-    spawnChance: 0.25
-    props:
-    - {fileID: 919132149155446097, guid: a083e51d44842b04db30da22453b83d8, type: 3}
-    - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
-    wallTint: {r: 1, g: 1, b: 1, a: 0}
-    floorTint: {r: 1, g: 1, b: 1, a: 0}
-    sizeX: 5
-    sizeY: 1
+    roomsCanConnect: []
+    restrictFromRandomSelection: 0
   - themeName: Office
-    spawnChance: 0.25
+    spawnChance: 0.5
     props:
     - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
     - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
@@ -288,6 +288,19 @@ MonoBehaviour:
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 2
+    roomsCanConnect: []
+    restrictFromRandomSelection: 0
+  - themeName: Hub
+    spawnChance: 0.5
+    props:
+    - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
+    - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
+    wallTint: {r: 1, g: 1, b: 1, a: 0}
+    floorTint: {r: 1, g: 1, b: 1, a: 0}
+    sizeX: 2
+    sizeY: 2
+    roomsCanConnect: []
+    restrictFromRandomSelection: 1
 --- !u!4 &884750283
 Transform:
   m_ObjectHideFlags: 0
