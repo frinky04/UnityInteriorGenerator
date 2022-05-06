@@ -82,7 +82,7 @@ public class LevelGeneratorScript : MonoBehaviour
         List<Vector2Int> doorPositions = new List<Vector2Int>();
 
         //Generate Hub Room
-        List<Vector2Int> HubRoom = GenerateFloorArray(4 + Random.Range(0,4), 2 + Random.Range(0, 2), 0, 1);
+        List<Vector2Int> HubRoom = GenerateFloorArray(6 + Random.Range(0,4), 2 + Random.Range(0, 2), 0, 1);
         PlacedWalls.AddRange(GenerateWalls(HubRoom));
         PlacedFloors.AddRange(HubRoom);
         rooms.Add(HubRoom);
@@ -109,7 +109,7 @@ public class LevelGeneratorScript : MonoBehaviour
                 int isEdgeTest = isEdge(testingPosition, HubRoom);
                 RoomTheme roomTheme = new RoomTheme();
 
-                if (isEdgeTest != -1 && testingPosition != Vector2Int.zero)50
+                if (isEdgeTest != -1 && testingPosition != Vector2Int.zero)
                 {
                     roomTheme = roomThemes[Random.Range(0, roomThemes.Count)];
                     while (roomTheme.restrictFromRandomSelection == true)
