@@ -257,18 +257,22 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 585e3262042186f46b91b2d8a3be2ae3, type: 3}
   roomThemes:
   - themeName: Computer Area
-    spawnChance: 0.75
+    spawnChance: 0.5
+    roomSpawnChance: 0.25
     props:
     - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
     - {fileID: 919132149155446097, guid: 585e3262042186f46b91b2d8a3be2ae3, type: 3}
     wallTint: {r: 1, g: 1, b: 1, a: 0}
     floorTint: {r: 1, g: 1, b: 1, a: 0}
-    sizeX: 5
+    sizeX: 6
     sizeY: 5
-    roomsCanConnect: []
     restrictFromRandomSelection: 0
+    MaxUses: 2
+    roomsCanConnect:
+    - Hub
   - themeName: Storage
-    spawnChance: 1
+    spawnChance: 1000
+    roomSpawnChance: 0.1
     props:
     - {fileID: 919132149155446097, guid: a083e51d44842b04db30da22453b83d8, type: 3}
     - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
@@ -277,10 +281,13 @@ MonoBehaviour:
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 2
-    roomsCanConnect: []
     restrictFromRandomSelection: 0
+    MaxUses: 1
+    roomsCanConnect:
+    - Computer Area
   - themeName: Office
-    spawnChance: 0.5
+    spawnChance: 0.35
+    roomSpawnChance: 0.1
     props:
     - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
     - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
@@ -288,17 +295,21 @@ MonoBehaviour:
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 2
-    roomsCanConnect: []
     restrictFromRandomSelection: 0
+    MaxUses: 1000
+    roomsCanConnect:
+    - Hub
   - themeName: Hub
     spawnChance: 0
+    roomSpawnChance: 1
     props: []
     wallTint: {r: 1, g: 1, b: 1, a: 0}
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 4
-    roomsCanConnect: []
     restrictFromRandomSelection: 1
+    MaxUses: 0
+    roomsCanConnect: []
 --- !u!4 &884750283
 Transform:
   m_ObjectHideFlags: 0
