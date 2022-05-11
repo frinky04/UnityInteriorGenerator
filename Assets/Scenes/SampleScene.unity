@@ -159,7 +159,7 @@ Light:
   m_CookieSize: 10
   m_Shadows:
     m_Type: 2
-    m_Resolution: -1
+    m_Resolution: 3
     m_CustomResolution: -1
     m_Strength: 1
     m_Bias: 0.05
@@ -277,12 +277,12 @@ MonoBehaviour:
     - {fileID: 919132149155446097, guid: a083e51d44842b04db30da22453b83d8, type: 3}
     - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
     - {fileID: 919132149155446097, guid: 9a90fecdb0d7f5c449e3e2897763c404, type: 3}
-    wallTint: {r: 1, g: 1, b: 1, a: 0}
+    wallTint: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 0}
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 2
     restrictFromRandomSelection: 0
-    MaxUses: 1
+    MaxUses: 3
     roomsCanConnect:
     - Computer Area
   - themeName: Office
@@ -291,7 +291,7 @@ MonoBehaviour:
     props:
     - {fileID: 919132149155446097, guid: 4ed6989497a12ad48adfcba5c4a075e6, type: 3}
     - {fileID: 919132149155446097, guid: 0eb9658da925778469f22aea0b728267, type: 3}
-    wallTint: {r: 1, g: 1, b: 1, a: 0}
+    wallTint: {r: 0.8018868, g: 0.8018868, b: 0.8018868, a: 0}
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 2
@@ -303,7 +303,7 @@ MonoBehaviour:
     spawnChance: 0
     roomSpawnChance: 1
     props: []
-    wallTint: {r: 1, g: 1, b: 1, a: 0}
+    wallTint: {r: 0.8396226, g: 0.8396226, b: 0.8396226, a: 0}
     floorTint: {r: 1, g: 1, b: 1, a: 0}
     sizeX: 2
     sizeY: 4

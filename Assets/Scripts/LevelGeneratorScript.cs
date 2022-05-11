@@ -10,12 +10,12 @@ public class LevelGeneratorScript : MonoBehaviour
     public GameObject doorwayPrefab;
     private List<Vector2Int> allFloors = new List<Vector2Int>();
     private List<Wall> allWalls = new List<Wall>();
-    [SerializeField] public List<GameObject> allProps = new List<GameObject>(); 
+    [SerializeField] public List<GameObject> allProps = new List<GameObject>();
     [SerializeField] public List<RoomTheme> roomThemes = new List<RoomTheme>();
     private Vector2Int[] directionArray = new Vector2Int[] { new Vector2Int(1, 0), new Vector2Int(0, -1), new Vector2Int(-1, 0), new Vector2Int(0, 1) };
     private Vector2Int[] invertedDirectionArray = new Vector2Int[] { new Vector2Int(-1, 0), new Vector2Int(0, 1), new Vector2Int(1, 0), new Vector2Int(0, -1) };
     private int[] invertedRotationArray = new int[] { 2, 3, 0, 1 };
-    
+
 
     // Start is called before the first frame update
     void Start()
@@ -34,7 +34,7 @@ public class LevelGeneratorScript : MonoBehaviour
     {
         foreach (roomClass room in rooms)
         {
-            if(room.floors.Contains(pos))
+            if (room.floors.Contains(pos))
             {
                 return room.theme.themeName;
             }
@@ -73,11 +73,7 @@ public class LevelGeneratorScript : MonoBehaviour
     public void GenerateRandomRooms(int baseRoomSizeX, int baseRoomSizeY, int numberOfRooms)
     {
 
-
-
-        //List<Vector2Int> PlacedFloors = new List<Vector2Int>();
-        //List<Wall> PlacedWalls = new List<Wall>();
-
+        //Elevator
         List<Vector2Int> ElevatorFloors = new List<Vector2Int>();
         List<Wall> ElevatorWalls = new List<Wall>();
 
@@ -85,6 +81,7 @@ public class LevelGeneratorScript : MonoBehaviour
         ElevatorFloors = GenerateFloorArray(baseRoomSizeX, baseRoomSizeY, 0, 0);
         ElevatorWalls = GenerateWalls(ElevatorFloors);
 
+        //Storage
         List<Wall> PlacedDoorways = new List<Wall>();
 
         List<roomClass> allRooms = new List<roomClass>();
@@ -92,40 +89,38 @@ public class LevelGeneratorScript : MonoBehaviour
         List<Vector2Int> doorPositions = new List<Vector2Int>();
 
         //Generate Hub Room
-        List<Vector2Int> HubRoom = GenerateFloorArray(6 + Random.Range(0,4), 2 + Random.Range(0, 2), 0, 1);;
+        List<Vector2Int> HubRoom = GenerateFloorArray(6 + Random.Range(0, 4), 2 + Random.Range(0, 2), 0, 1); ;
 
+
+        allRooms.Add(new roomClass(ElevatorFloors, GetThemeFromTag("Hub", roomThemes), ElevatorWalls));
         allRooms.Add(new roomClass(HubRoom, GetThemeFromTag("Hub", roomThemes), GenerateWalls(HubRoom)));
 
         //Add Hub Doorway
         PlacedDoorways.Add(new Wall(3, Vector2Int.zero));
         doorPositions.Add(Vector2Int.zero);
-        doorPositions.Add(new Vector2Int(0,1));
+        doorPositions.Add(new Vector2Int(0, 1));
 
-        //Door Posisitons
-
-
+        //For Each Room
         for (int i = 0; i < numberOfRooms; i++)
         {
             bool success = false;
             int iterators = 0;
-
-            while (success == false && iterators < 1024)
+            //Try 2048 Times
+            while (success == false && iterators < 2048)
             {
+                //Iterate
                 iterators++;
 
                 roomClass testingRoom = allRooms[Random.Range(0, allRooms.Count())];
-                Vector2Int testingPosition = testingRoom.floors[Random.Range(0, testingRoom.floors.Count())];;
-
-
+                Vector2Int testingPosition = testingRoom.floors[Random.Range(0, testingRoom.floors.Count())];
                 Vector2Int newDirection = Vector2Int.zero;
                 int isEdgeTest = isEdge(testingPosition, HubRoom);
                 RoomTheme roomTheme = new RoomTheme();
                 roomTheme = roomThemes[Random.Range(0, roomThemes.Count)];
 
-
+                // If its an edge, not the elevator, can connect to the room type, the random value succeeds, and finally the max uses is greater then 0
                 if (isEdgeTest != -1 && testingPosition != Vector2Int.zero && roomTheme.roomsCanConnect.Contains(GetFloorTag(testingPosition, allRooms)) && Random.Range(0, 100) / 100f <= roomTheme.roomSpawnChance && roomTheme.MaxUses > 0)
                 {
-                    
                     while (roomTheme.restrictFromRandomSelection == true)
                     {
                         roomTheme = roomThemes[Random.Range(0, roomThemes.Count)];
@@ -145,14 +140,11 @@ public class LevelGeneratorScript : MonoBehaviour
                         doorPositions.Add(newDirection);
                         PlacedDoorways.Add(new Wall(isEdgeTest, testingPosition));
                         PlacedDoorways.Add(new Wall(invertedRotationArray[isEdgeTest], newDirection));
-                        //PlacedWalls.AddRange(newRoomWalls);
-                        //PlacedFloors.AddRange(newRoom);
                         allRooms.Add(new roomClass(newRoom, roomTheme, newRoomWalls));
                         if (roomTheme.MaxUses > 0)
                         {
                             roomTheme.MaxUses--;
                         }
-                        //DrawDebugString($"{GetThemeFromTag(GetFloorTag(newDirection, allRooms), roomThemes).MaxUses} : {GetFloorTag(newDirection, allRooms)}", posToVector(newDirection));
                         success = true;
                     }
                     else if (newRoom == null)
@@ -163,6 +155,7 @@ public class LevelGeneratorScript : MonoBehaviour
             }
         }
 
+        //Set Doorways
         foreach (Wall doorway in PlacedDoorways)
         {
             foreach (roomClass room in allRooms)
@@ -172,23 +165,17 @@ public class LevelGeneratorScript : MonoBehaviour
                     room.walls[getWallAtTransform(doorway.pos, doorway.rot, room.walls)].ChangeWallState(Wall.WallType.Doorway);
                 }
             }
-
-            
         }
 
-
-        //remove duplicates from lists
-        /*PlacedFloors = PlacedFloors.Distinct().ToList();
-        PlaceFloors(PlacedFloors);*/
-        //PlaceWalls(PlacedWalls);
-
+        //Place Floors aAnd Walls
         foreach (roomClass roomToPlace in allRooms)
         {
-            //PlaceFloors(roomToPlace.floors.Distinct().ToList());
-            PlaceWalls(roomToPlace.walls);
+            PlaceFloors(roomToPlace.floors.Distinct().ToList(), roomToPlace.theme.floorTint);
+            PlaceWalls(roomToPlace.walls, roomToPlace.theme.wallTint);
 
         }
 
+        //Place Props
         foreach (roomClass room in allRooms)
         {
             foreach (Vector2Int testFloor in room.floors)
@@ -196,14 +183,17 @@ public class LevelGeneratorScript : MonoBehaviour
                 int propEdgeTest = isEdge(testFloor, room.floors);
                 if (propEdgeTest != -1 && !doorPositions.Contains(testFloor))
                 {
-                    if(Random.Range(0,100) / 100f <= room.theme.spawnChance)
+                    if (Random.Range(0, 100) / 100f <= room.theme.spawnChance)
                     {
-                        PlaceProp(new Prop(testFloor, propEdgeTest, room.theme.props));
+                        if(room.theme.props.Count > 0)
+                        {
+                            PlaceProp(new Prop(testFloor, propEdgeTest, room.theme.props));
+                        }
                     }
-                    
+
                 }
             }
-            
+
         }
 
     }
@@ -235,7 +225,7 @@ public class LevelGeneratorScript : MonoBehaviour
         //loop through themes
         foreach (RoomTheme theme in themes)
         {
-            if(theme.themeName == tag)
+            if (theme.themeName == tag)
             {
                 return theme;
             }
@@ -357,20 +347,24 @@ public class LevelGeneratorScript : MonoBehaviour
     }
 
     //Places the visuals for floors based on a list of vector 2 ints
-    public void PlaceFloors(List<Vector2Int> inFloors)
+    public void PlaceFloors(List<Vector2Int> inFloors, Color tint = default(Color))
     {
         foreach (Vector2Int floor in inFloors)
         {
-            Instantiate(floorPrefab, posToVector(floor), Quaternion.Euler(-90f, 0.0f, 0.0f), this.transform).name = $"Floor: {floor}";
+            GameObject gameObject = Instantiate(floorPrefab, posToVector(floor), Quaternion.Euler(-90f, 0.0f, 0.0f), this.transform);
+            gameObject.name = $"Floor: {floor}";
+            gameObject.GetComponent<Renderer>().material.color = tint;
         }
     }
 
     //Places the wall visuals based on the list of walls
-    public void PlaceWalls(List<Wall> inWalls)
+    public void PlaceWalls(List<Wall> inWalls, Color tint = default(Color))
     {
         foreach (Wall wall in inWalls)
         {
-            Instantiate(getWallPrefabFromType(wall.wallType), posToVector(wall.pos), Quaternion.Euler(-90f, intToRot(wall.rot), 0.0f), this.transform).name = $"{wall.wallType}: {wall.pos} ";
+            GameObject gameObject = Instantiate(getWallPrefabFromType(wall.wallType), posToVector(wall.pos), Quaternion.Euler(-90f, intToRot(wall.rot), 0.0f), this.transform);
+            gameObject.name = $"{wall.wallType}: {wall.pos} ";
+            gameObject.GetComponent<Renderer>().material.color = tint;
         }
     }
 
@@ -438,7 +432,7 @@ public class LevelGeneratorScript : MonoBehaviour
 
     void PlaceProp(Prop prop)
     {
-        if(prop != null)
+        if (prop != null)
         {
             Instantiate(prop.propPrefab, posToVector(prop.pos), Quaternion.Euler(-90f, intToRot(prop.rot), 0.0f), this.transform).name = $"Prop: {prop.propPrefab.name} ";
         }
@@ -483,12 +477,17 @@ public class Prop
     public Prop(Vector2Int pos, int rot, List<GameObject> props)
     {
         //get random element from props
-        propPrefab = props[Random.Range(0, props.Count)];
+        if(props != null)
+        {
+            if(props.Count > 0)
+            {
+                propPrefab = props[Random.Range(0, props.Count)];
+            }
+        }
+        
         this.pos = pos;
         this.rot = rot;
 
-        //
-        
     }
 }
 
@@ -501,13 +500,13 @@ public class RoomTheme
     public float roomSpawnChance = 1;
     public List<GameObject> props;
     public Color wallTint = Color.white;
-    public Color floorTint = Color.white;
+    public Color floorTint = Color.grey;
     public int sizeX = 1;
     public int sizeY = 1;
-    public bool restrictFromRandomSelection;
+    public bool restrictFromRandomSelection = false;
     public int MaxUses = 1;
     public List<string> roomsCanConnect;
-  
+
 }
 
 public class roomClass
